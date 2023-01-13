@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Cmd.Terminal.Flags;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,51 +7,28 @@ using System.Threading.Tasks;
 
 namespace Cmd.Terminal.Debugger.Monitoring
 {
-    public class TelemetryCommand : ICommand
+    public class TelemetryCommand : BaseCommand
     {
         private Telemetry m_telemetry;
-        public string Description { get; init; }
-        /// <summary>filename to write data table</summary>
         public string FileName { get; set; } = "telemetry";
-
-        public string Name { get; init; }
 
         public TelemetryCommand(Telemetry telemetry, string commandName = "telemetry", string description = "Working with data monitoring")
         {
             m_telemetry = telemetry;
-            Name = commandName;
+            Command = commandName;
             Description = description;
+
+            Flags.Add(new Flag('h', Help));
+            Flags.Add(new Flag('s', Show));
+            Flags.Add(new Flag('w', Write));
         }
-        void ICommand.Process(Queue<string> commands)
+
+        private void Help()
         {
-
-            commands.TryDequeue(out string command);
-
-            //int count = int.MaxValue;
-            //if (commands.TryDequeue(out string strCount)
-            //&& int.TryParse(strCount, out int c))
-            //{
-            //    count = c;
-            //}
-
-            switch (command)
-            {
-                case "help":
-                    Terminal.PrintHelp("telemetry -s", "Outputting a table to a console.");
-                    Terminal.PrintHelp("telemetry -w", "Outputting a table to a file.");
-                    //   Terminal.PrintHelp("telemetry enter", "Monitor Real-time logs");
-                    break;
-                case "-s":
-                    Show();
-                    break;
-                case "-w":
-                    Write();
-                    break;
-                default:
-                    System.Console.WriteLine("Command not found. Please use 'telemetry help' command");
-                    break;
-            }
+            Terminal.PrintHelp("telemetry -s", "Outputting a table to a console.");
+            Terminal.PrintHelp("telemetry -w", "Outputting a table to a file.");
         }
+
         private void Write()
         {
             if (!Directory.Exists(@"Logs")) { Directory.CreateDirectory(@"Logs"); }

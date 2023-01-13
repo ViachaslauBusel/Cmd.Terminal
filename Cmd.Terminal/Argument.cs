@@ -6,11 +6,7 @@ using System.Threading.Tasks;
 
 namespace Cmd.Terminal
 {
-    public interface ICommand
+    internal class Argument
     {
-        string Description { get; }
-        string Name { get; }
-
-        void Process(Queue<string> command);
     }
 }

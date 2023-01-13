@@ -3,35 +3,28 @@
     public static class Terminal
     {
 
-        private static Dictionary<string, ICommand> m_commands = new Dictionary<string, ICommand>();
+        private static Dictionary<string, BaseCommand> m_commands = new Dictionary<string, BaseCommand>();
         static Terminal()
         {
-            m_commands.Add("help", new Command("help", "Display information about builtin commands", (q) =>
+            m_commands.Add("help", new Command("help", "Display information about builtin commands", () =>
             {
-                foreach (KeyValuePair<string, ICommand> c in m_commands)
-                { PrintHelp(c.Value.Name, c.Value.Description); }
+                foreach (KeyValuePair<string, BaseCommand> c in m_commands)
+                { PrintHelp(c.Value.Command, c.Value.Description); }
             }));
 
           //  m_commands.Add("online", new Command("online", "Number of connected clients", (q) => System.Console.WriteLine($"online: {ClientList.online()}")));
           //  m_commands.Add("keygen", new Command("keygen", "Generate a key to establish a secure connection", (q) => ContainerRSAKey.GenerateKey()));
-            m_commands.Add("exit", new Command("exit", "Finish working with the terminal", (q) => throw new TerminalException()));
+            m_commands.Add("exit", new Command("exit", "Finish working with the terminal", () => throw new TerminalException()));
         }
-        public static void Listen()
+        public static void Listen(string terminalName = "Server")
         {
             while (true)
             {
                 try
                 {
-                    Print("Server: ", ConsoleColor.Green);
+                    Print(terminalName+": ", ConsoleColor.Green);
 
-                    string[] commandArray = Console.ReadLine().Split(" ");
-                    for (int i = 0; i < commandArray.Length; i++) commandArray[i] = commandArray[i].Trim().ToLower();
-                    Queue<string> command = new Queue<string>(commandArray);
-
-                    if (command.TryDequeue(out string strtCommand)
-                    && m_commands.ContainsKey(strtCommand))
-                    { m_commands[strtCommand].Process(command); }
-                    else System.Console.WriteLine("Command not found. Please use 'help' command");
+                    RunCommand(Console.ReadLine());
                 }
                 catch (TerminalException) { return; }
                 catch (Exception e) {  }
@@ -39,21 +32,33 @@
             }
         }
 
-        public static void AddCommand(ICommand command)
+        public static void AddCommand(BaseCommand command)
         {
-            if (m_commands.ContainsKey(command.Name))
-            { m_commands[command.Name] = command; }
+            if (m_commands.ContainsKey(command.Command))
+            { m_commands[command.Command] = command; }
             else
-            { m_commands.Add(command.Name, command); }
+            { m_commands.Add(command.Command, command); }
+        }
+        public static void RunCommand(string cmd)
+        {
+            Queue<string> commandArray = new Queue<string>(cmd.Split(" ").Select(t => t.Trim()));
+
+            if (commandArray.TryDequeue(out string command))
+            {
+                command = command.ToLower();
+
+                if (m_commands.ContainsKey(command))
+                { m_commands[command].Process(commandArray); }
+                else System.Console.WriteLine("Command not found. Please use 'help' command");
+            }
         }
 
         internal static void PrintHelp(string name, string description)
         {
-            if (string.IsNullOrEmpty(description)) return;
             Print(name, ConsoleColor.Blue);
-            System.Console.WriteLine($"  {description}");
+            PrintLine($"  {description}");
         }
-        public static void PrintLine(string msg, ConsoleColor color)
+        public static void PrintLine(string msg, ConsoleColor color = ConsoleColor.White)
         {
             ConsoleColor defaultColor = System.Console.ForegroundColor;
             System.Console.ForegroundColor = color;

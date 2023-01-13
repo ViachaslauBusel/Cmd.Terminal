@@ -1,29 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Cmd.Terminal
+﻿namespace Cmd.Terminal
 {
-    public class Command : ICommand
+    public class Command : BaseCommand
     {
-        public string Name { get; private set; }
-        public string Description { get; private set; }
-        private Action<Queue<string>> action;
 
-        public Command(string name, Action<Queue<string>> action) : this(name, "", action) { }
-        public Command(string name, string description, Action<Queue<string>> action)
+        private Action m_action;
+
+        public Command(string command, string description, Action action)
         {
-            Name = name;
+            Command = command;
             Description = description;
-            this.action = action;
+            m_action = action;
         }
 
-        void ICommand.Process(Queue<string> command)
+        protected override void AfterUsingFlags(int usedFlagCount)
         {
-            action?.Invoke(command);
+            m_action?.Invoke();
         }
-
     }
 }
