@@ -31,6 +31,7 @@ namespace Cmd.Terminal.Debugger.Logger
         protected override void BeforeUsingFlags()
         {
             m_filter = null;
+            m_logger.Lock();    
         }
 
         private void FilterIgnoreCase(string filter)
@@ -56,6 +57,7 @@ namespace Cmd.Terminal.Debugger.Logger
         {
             Terminal.PrintLine("You entered log monitoring mode. To exit press q");
             m_logger.print += PrintNote;
+            m_logger.Unlock();
             while (true)
             {
                 ConsoleKeyInfo _c = Console.ReadKey(true);
@@ -66,6 +68,7 @@ namespace Cmd.Terminal.Debugger.Logger
                     break;
                 }
             }
+            m_logger.Lock();
         }
         private void PrintNote(Note note) => Print(note);
         private void Remove(int count)
@@ -80,7 +83,7 @@ namespace Cmd.Terminal.Debugger.Logger
             if (count == 0) count = messagesCount;
 
             Terminal.PrintLine($"Log output:");
-            foreach (Note e in m_logger.GetMessagesEnumerable())
+            foreach (Note e in m_logger.GetMessagesEnumerator())
             {
                 if (count <= 0) break;
                 if (Print(e)) count--;
@@ -112,6 +115,7 @@ namespace Cmd.Terminal.Debugger.Logger
             {
                 Help();
             }
+            m_logger.Unlock();
         }
     }
 }

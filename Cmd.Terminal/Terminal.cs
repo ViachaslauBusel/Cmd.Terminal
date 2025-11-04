@@ -58,6 +58,7 @@
             Print(name, ConsoleColor.Blue);
             PrintLine($"  {description}");
         }
+
         public static void PrintLine(string msg, ConsoleColor color = ConsoleColor.White)
         {
             ConsoleColor defaultColor = System.Console.ForegroundColor;
@@ -65,6 +66,7 @@
             System.Console.WriteLine(msg);
             System.Console.ForegroundColor = defaultColor;
         }
+
         public static void Print(string msg, ConsoleColor color)
         {
             ConsoleColor defaultColor = System.Console.ForegroundColor;
@@ -72,10 +74,27 @@
             System.Console.Write(msg);
             System.Console.ForegroundColor = defaultColor;
         }
+
         public static void UpdatePrint(string msg, ConsoleColor color)
         {
+            int currentLine = System.Console.CursorTop;
+            System.Console.SetCursorPosition(0, currentLine);
+
+            // Clear the line and reset cursor
+            System.Console.Write(new string(' ', System.Console.BufferWidth));
+            System.Console.SetCursorPosition(0, currentLine);
+
             Print(msg, color);
-            System.Console.SetCursorPosition(0, System.Console.CursorTop);
+        }
+
+        public static DynamicConsoleLine CreateDynamicLine(string msg, ConsoleColor color)
+        {
+            return new DynamicConsoleLine(msg, color);
+        }
+
+        public static ProgressConsoleLine CreateProgressLine(string msg, float progress, ConsoleColor color)
+        {
+            return new ProgressConsoleLine(msg, progress, color);
         }
     }
 }
