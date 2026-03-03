@@ -8,33 +8,39 @@
 
         public DynamicConsoleLine(string msg, ConsoleColor color)
         {
-            Console.WriteLine();
-            _cursorTop = Console.CursorTop - 1;
-            _color = color;
-            Print(msg, color);
+            lock (Terminal.MainLock)
+            {
+                Console.WriteLine();
+                _cursorTop = Console.CursorTop - 1;
+                _color = color;
+                Print(msg, color);
+            }
         }
 
         public virtual void Print(string msg, ConsoleColor? color = null)
         {
             color ??= _color;
 
-            // Сохраняем позицию курсора после вывода сообщения
-            int cursorLeft = Console.CursorLeft;
-            int cursorTop = Console.CursorTop;
+            lock (Terminal.MainLock)
+            {
+                // Сохраняем позицию курсора после вывода сообщения
+                int cursorLeft = Console.CursorLeft;
+                int cursorTop = Console.CursorTop;
 
-            // Очищаем предыдущий вывод
-            ClearPrevious();
+                // Очищаем предыдущий вывод
+                ClearPrevious();
 
-            _lastMsgLength = msg.Length;
+                _lastMsgLength = msg.Length;
 
-            Console.SetCursorPosition(0, _cursorTop);
-            Console.ForegroundColor = color.Value;
+                Console.SetCursorPosition(0, _cursorTop);
+                Console.ForegroundColor = color.Value;
 
-            Console.Write(msg);
+                Console.Write(msg);
 
-            Console.ResetColor();
-            // Восстанавливаем позицию курсора
-            Console.SetCursorPosition(cursorLeft, cursorTop);
+                Console.ResetColor();
+                // Восстанавливаем позицию курсора
+                Console.SetCursorPosition(cursorLeft, cursorTop);
+            }
         }
 
         private void ClearPrevious()

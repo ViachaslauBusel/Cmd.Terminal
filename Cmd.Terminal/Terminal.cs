@@ -4,6 +4,8 @@
     {
 
         private static Dictionary<string, BaseCommand> m_commands = new Dictionary<string, BaseCommand>();
+        internal static readonly object MainLock = new object();
+
         static Terminal()
         {
             m_commands.Add("help", new Command("help", "Display information about builtin commands", () =>
@@ -61,30 +63,39 @@
 
         public static void PrintLine(string msg, ConsoleColor color = ConsoleColor.White)
         {
-            ConsoleColor defaultColor = System.Console.ForegroundColor;
-            System.Console.ForegroundColor = color;
-            System.Console.WriteLine(msg);
-            System.Console.ForegroundColor = defaultColor;
+            lock (MainLock)
+            {
+                ConsoleColor defaultColor = System.Console.ForegroundColor;
+                System.Console.ForegroundColor = color;
+                System.Console.WriteLine(msg);
+                System.Console.ForegroundColor = defaultColor;
+            }
         }
 
         public static void Print(string msg, ConsoleColor color)
         {
-            ConsoleColor defaultColor = System.Console.ForegroundColor;
-            System.Console.ForegroundColor = color;
-            System.Console.Write(msg);
-            System.Console.ForegroundColor = defaultColor;
+            lock (MainLock)
+            {
+                ConsoleColor defaultColor = System.Console.ForegroundColor;
+                System.Console.ForegroundColor = color;
+                System.Console.Write(msg);
+                System.Console.ForegroundColor = defaultColor;
+            }
         }
 
         public static void UpdatePrint(string msg, ConsoleColor color)
         {
-            int currentLine = System.Console.CursorTop;
-            System.Console.SetCursorPosition(0, currentLine);
+            lock (MainLock)
+            {
+                int currentLine = System.Console.CursorTop;
+                System.Console.SetCursorPosition(0, currentLine);
 
-            // Clear the line and reset cursor
-            System.Console.Write(new string(' ', System.Console.BufferWidth));
-            System.Console.SetCursorPosition(0, currentLine);
+                // Clear the line and reset cursor
+                System.Console.Write(new string(' ', System.Console.BufferWidth));
+                System.Console.SetCursorPosition(0, currentLine);
 
-            Print(msg, color);
+                Print(msg, color);
+            }
         }
 
         public static DynamicConsoleLine CreateDynamicLine(string msg, ConsoleColor color)

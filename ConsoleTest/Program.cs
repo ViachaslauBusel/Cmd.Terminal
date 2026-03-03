@@ -8,34 +8,50 @@ namespace Console.Test
     {
         static void Main(string[] args)
         {
-            Terminal.PrintLine("Console Terminal Test", ConsoleColor.Cyan);
-            var line =  Terminal.CreateDynamicLine("Hello World!, Long message test !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", ConsoleColor.Green);
-            Terminal.PrintLine("This is a test line no 0", ConsoleColor.Magenta);
-            line.Print("Hello World!", ConsoleColor.Yellow);
-            Terminal.PrintLine("This is a test line", ConsoleColor.Magenta);
-            line.Print("Hello World!", ConsoleColor.Yellow);
-            line.Print("");
-            line.Print("New Line Test!", ConsoleColor.Cyan);
+            TestConcurrentDynamicLines_NoExceptions();
+        }
 
-            var progressLine = Terminal.CreateProgressLine("Progress:", 0.0f, ConsoleColor.Green);
+        // Concurrent update smoke test: multiple threads update different dynamic lines concurrently.
+        private static void TestConcurrentDynamicLines_NoExceptions()
+        {
+            const int workers = 30;
+            const int iterations = 50;
 
-            for (int i = 0; i <= 100; i++)
+            var colors = new[]
             {
-                System.Threading.Thread.Sleep(50);
-                progressLine.UpdateProgress(i / 100.0f);
+        ConsoleColor.Green,
+        ConsoleColor.Yellow,
+        ConsoleColor.Cyan,
+        ConsoleColor.Magenta,
+        ConsoleColor.White
+    };
+
+            using var ready = new CountdownEvent(workers);
+            using var start = new ManualResetEventSlim(false);
+
+            var tasks = new Task[workers];
+
+            for (int w = 0; w < workers; w++)
+            {
+                int id = w;
+                tasks[w] = Task.Run(() =>
+                {
+                    ready.Signal(); // поток готов
+                    start.Wait();   // ждет общий старт
+
+                    Thread.Sleep(Random.Shared.Next(100)); // имитация разной подготовки
+
+                    var color = colors[id % colors.Length];
+                    var line = Terminal.CreateDynamicLine($"Loading {id:00}...", color);
+
+                    Thread.Sleep(100 + Random.Shared.Next(1_000)); // имитация работы
+                    line.Print($"Line {id:00} done!", color);
+                });
             }
 
-            List<int> list = new List<int>() { 1, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
-            int average = (int)list.Average();
-            
-            TerminalLogger logger = new TerminalLogger(1);
-            logger.Warn("test warn 1");
-            logger.Info("test info 2");
-            logger.Warn("test Warn 3");
-            logger.Warn("test warn 4");
-            logger.Info($"average:{average}");
-
-            Terminal.Listen("test");
+            ready.Wait(); // все потоки готовы
+            start.Set();  // одновременный запуск
+            Task.WaitAll(tasks);
         }
     }
 }
