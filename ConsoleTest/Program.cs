@@ -1,6 +1,4 @@
-﻿using Cmd.Terminal.Debugger.Logger;
-using Cmd.Terminal;
-using System;
+﻿using Cmd.Terminal;
 
 namespace Console.Test
 {
@@ -15,16 +13,6 @@ namespace Console.Test
         private static void TestConcurrentDynamicLines_NoExceptions()
         {
             const int workers = 30;
-            const int iterations = 50;
-
-            var colors = new[]
-            {
-        ConsoleColor.Green,
-        ConsoleColor.Yellow,
-        ConsoleColor.Cyan,
-        ConsoleColor.Magenta,
-        ConsoleColor.White
-    };
 
             using var ready = new CountdownEvent(workers);
             using var start = new ManualResetEventSlim(false);
@@ -39,13 +27,10 @@ namespace Console.Test
                     ready.Signal(); // поток готов
                     start.Wait();   // ждет общий старт
 
-                    Thread.Sleep(Random.Shared.Next(100)); // имитация разной подготовки
+                    var line = Terminal.CreateDynamicLine($"Loading worker {id:00}: preparing resources, validating input, initializing pipeline, waiting external dependencies...", ConsoleColor.Yellow);
 
-                    var color = colors[id % colors.Length];
-                    var line = Terminal.CreateDynamicLine($"Loading {id:00}...", color);
-
-                    Thread.Sleep(100 + Random.Shared.Next(1_000)); // имитация работы
-                    line.Print($"Line {id:00} done!", color);
+                    Thread.Sleep(100 + Random.Shared.Next(2_000)); // имитация работы
+                    line.Print($"Worker {id:00} completed successfully: resources released, final checks passed, result persisted, shutdown sequence finished.", ConsoleColor.Green);
                 });
             }
 

@@ -4,9 +4,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <AssemblyVersion>1.2.2</AssemblyVersion>
-    <FileVersion>1.2.2</FileVersion>
-    <Version>1.2.2</Version>
+    <AssemblyVersion>1.2.3</AssemblyVersion>
+    <FileVersion>1.2.3</FileVersion>
+    <Version>1.2.3</Version>
     <Description>Command shell to control the application</Description>
     <AssemblyName>Cmd.Terminal.com</AssemblyName>
   </PropertyGroup>
